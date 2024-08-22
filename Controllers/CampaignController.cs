@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using CampaignApi.DTO;
+using CampaignApi.Context;
+using CampaignApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampaignApi.Controllers;
 
@@ -8,33 +11,74 @@ namespace CampaignApi.Controllers;
 public class CampaignController : ControllerBase
 {
     private readonly ILogger<HealthController> _logger;
+    private readonly AppDbContext _context;
 
-    public CampaignController(ILogger<HealthController> logger)
+    public CampaignController(ILogger<HealthController> logger, AppDbContext context)
     {
         _logger = logger;
+        _context = context;
     }
 
     [HttpGet("ListAllCampaigns")]
     public IActionResult ListAllCampaigns()
     {
-        // TODO: Implement logic to retrieve all campaigns
-        // and return them as a response
-        return Ok();
+        var query = _context.Customers.FirstOrDefaultAsync(customer => customer.APIKey == Request.Headers["APIKey"]);
+
+        if (query?.Result == null)
+        {
+            return Unauthorized();
+        }
+
+        Customer me = query.Result;
+
+        var campaigns = _context.Campaigns.Where(campaign => campaign.Customer.Id == me.Id).ToListAsync();
+
+        return Ok(campaigns);
     }
 
     [HttpGet("ListOnlineCampaigns")]
     public IActionResult ListOnlineCampaigns()
     {
-        // TODO: Implement logic to retrieve online campaigns
-        // and return them as a response
-        return Ok();
+        var query = _context.Customers.FirstOrDefaultAsync(customer => customer.APIKey == Request.Headers["APIKey"]);
+
+        if (query?.Result == null)
+        {
+            return Unauthorized();
+        }
+
+        Customer me = query.Result;
+
+        var campaigns = _context.Campaigns.Where(campaign =>
+            campaign.Customer.Id == me.Id &&
+            campaign.StartDate <= DateTime.Now &&
+            campaign.EndDate >= DateTime.Now
+        ).ToListAsync();
+
+        return Ok(campaigns);
     }
 
     [HttpGet("CampaignDetails/{id}")]
-    public IActionResult CampaignDetails(int id)
+    public IActionResult CampaignDetails(Guid id)
     {
-        // TODO: Implement logic to retrieve campaign details
-        // for the specified id and return them as a response
-        return Ok();
+        var query = _context.Customers.FirstOrDefaultAsync(customer => customer.APIKey == Request.Headers["APIKey"]);
+
+        if (query?.Result == null)
+        {
+            return Unauthorized();
+        }
+
+        Customer me = query.Result;
+
+        var campaign = _context.Campaigns.FirstOrDefaultAsync(campaign =>
+            campaign.Customer.Id == me.Id &&
+            campaign.Id == id
+        );
+
+        if (campaign?.Result == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(campaign);
     }
 }

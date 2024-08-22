@@ -12,4 +12,5 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Campaign> Campaigns { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 }
