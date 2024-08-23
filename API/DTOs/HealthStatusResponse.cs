@@ -1,9 +1,8 @@
 using System;
 
-namespace CampaignApi.DTO
+namespace CampaignApi.DTO;
+
+public class HealthStatusResponse
 {
-    public class HealthStatusResponse
-    {
-        public required string Status { get; set; }
-    }
+    public required string Status { get; set; }
 }

@@ -21,9 +21,4 @@ public class Campaign
     [Required]
     public required Guid CustomerId { get; set; }
     public Customer Customer { get; set; }
-
-    public bool IsOnline()
-    {
-        return StartDate <= DateTime.Now && (EndDate == null || EndDate >= DateTime.Now);
-    }
 }
